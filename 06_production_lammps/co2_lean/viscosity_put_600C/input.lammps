@@ -1,0 +1,65 @@
+# Viscosity via RNEMD with Profile-Unbiased Thermostat (PUT) at 600C (873K)
+# Li15Na15(BO3)10, 2x2x5 supercell (1400 atoms)
+# PUT removes streaming velocity before computing temperature,
+# so thermostat doesn't damp the velocity gradient
+
+variable        TEMP equal 873.0
+variable        PRES equal 1.0
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+mass            1 10.810    # B
+mass            2 16.000    # O
+mass            3 6.940     # Li
+mass            4 22.990    # Na
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 98765
+timestep        0.001
+
+# --- Phase 1: NPT equilibration (100 ps) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+thermo          1000
+run             100000
+unfix           1
+
+# --- Phase 2: NVT equilibration (50 ps) ---
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             50000
+unfix           1
+
+# --- Phase 3: Production RNEMD with PUT ---
+reset_timestep  0
+
+# Profile-unbiased temperature: subtract streaming velocity in z-bins
+compute         temp_put all temp/profile 1 1 1 z 20
+
+# Velocity profile output (20 bins along z)
+compute         layers all chunk/atom bin/1d z lower 0.05 units reduced
+fix             vel_profile all ave/chunk 10 1000 10000 layers vx file velocity_profile.dat
+
+# RNEMD viscosity fix: swap x-momentum every 100 steps, 20 slabs along z
+fix             rnemd all viscosity 100 x z 20
+
+# NVT thermostat using PUT temperature (doesn't damp streaming flow)
+fix             nvt_put all nvt temp ${TEMP} ${TEMP} 1.0
+fix_modify      nvt_put temp temp_put
+
+thermo_style    custom step temp c_temp_put pe ke etotal press f_rnemd
+thermo          10000
+
+# Production: 3M steps (3 ns)
+run             3000000
+
+print "Total momentum transferred: $(f_rnemd)"

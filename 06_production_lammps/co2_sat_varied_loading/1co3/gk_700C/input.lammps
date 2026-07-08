@@ -1,0 +1,81 @@
+# Green-Kubo bulk viscosity at 700C (973.15K)
+# B10O32C1Na15Li15 - 1 CO3 / 2x2x5 supercell (1460 atoms)
+# Recipe: NVT production + off-diagonal stress autocorrelation.
+#   eta = V/(kB T) * integral <P_ab(0) P_ab(t)> dt
+# Independent of Stokes-Einstein; bypasses the BO3-caging artifact.
+
+variable        TEMP equal 973.15
+variable        PRES equal 1.0
+
+plugin load /apps/t4/rhel9/free/deepmd-kit/2.2.9/gcc11.4.1/cuda12.3.2/openmpi5.0.2/lib/deepmd_lmp/dpplugin.so
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 98765
+timestep        0.001                      # 1 fs
+
+# --- Phase 1: NPT equilibration (100 ps) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal press vol
+thermo          5000
+run             100000
+unfix           1
+
+# --- Phase 2: NVT equilibration (50 ps) ---
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             50000
+unfix           1
+
+# --- Phase 3: NVT production with Green-Kubo (2 ns) ---
+reset_timestep  0
+
+# Stress-correlation parameters (LAMMPS standard recipe)
+variable        T  equal ${TEMP}
+variable        V  equal vol
+variable        dt equal 0.001            # ps
+variable        s  equal 5                # sample stress every 5 steps (5 fs)
+variable        p  equal 2000             # correlation length 2000 lag pairs (10 ps)
+variable        d  equal $s*$p            # output every 10000 steps (10 ps)
+
+# Unit conversions: stress (bar) -> Pa, V (Å^3) -> m^3, time (ps) -> s
+variable        kB     equal 1.3806504e-23
+variable        bar2Pa equal 1.0e5
+variable        A2m    equal 1.0e-10
+variable        ps2s   equal 1.0e-12
+variable        convert equal ${bar2Pa}*${bar2Pa}*${ps2s}*${A2m}*${A2m}*${A2m}
+
+# Off-diagonal stress accessors
+variable        pxy equal pxy
+variable        pxz equal pxz
+variable        pyz equal pyz
+
+# 3 stress pairs auto-correlated, written to stress_corr.dat (ave running)
+fix             SS all ave/correlate $s $p $d &
+                v_pxy v_pxz v_pyz type auto &
+                file stress_corr.dat ave running
+
+# Running η estimates from each off-diagonal trajectory (Pa·s)
+variable        scale equal ${convert}/(${kB}*${T})*${V}*$s*${dt}
+variable        v_xy equal trap(f_SS[3])*${scale}
+variable        v_xz equal trap(f_SS[4])*${scale}
+variable        v_yz equal trap(f_SS[5])*${scale}
+
+thermo_style    custom step temp press pxy pxz pyz v_v_xy v_v_xz v_v_yz
+thermo          10000
+
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             2000000
+
+print "Final η components (Pa·s): xy=${v_v_xy}  xz=${v_v_xz}  yz=${v_v_yz}"
+print "Production complete"

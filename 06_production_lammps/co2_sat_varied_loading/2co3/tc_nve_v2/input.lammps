@@ -1,0 +1,69 @@
+# Thermal conductivity via RNEMD (Muller-Plathe) at 600C (873K)
+# B10O34C2Na15Li15, 2x2x5 supercell (1520 atoms)
+#
+# v2: NVE-windowed protocol (matches lean and 4-CO3 saturated runs).
+# Earlier continuous-NVT version biased k upward by damping the gradient.
+# Stability against v4 model drift is handled by SHORT NVE windows
+# (25 ps NVE + 5 ps NVT rethermalization) so any drift is zeroed out
+# before it can amplify. 110 windows -> 3.3 ns total sampling.
+
+variable        TEMP equal 873.0
+variable        PRES equal 1.0
+variable        NWINDOWS equal 110
+variable        NVE_STEPS equal 25000
+variable        NVT_STEPS equal 5000
+
+plugin load /apps/t4/rhel9/free/deepmd-kit/2.2.9/gcc11.4.1/cuda12.3.2/openmpi5.0.2/lib/deepmd_lmp/dpplugin.so
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 52345
+timestep        0.001
+
+# --- Phase 1: NPT equilibration (100 ps) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+thermo          1000
+run             100000
+unfix           1
+
+# --- Phase 2: NVT equilibration (50 ps) ---
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             50000
+unfix           1
+
+# --- Phase 3: NVE + RNEMD windows ---
+reset_timestep  0
+
+compute         layers all chunk/atom bin/1d z lower 0.05 units reduced
+fix             temp_profile all ave/chunk 10 1000 10000 layers temp file temp_profile.dat
+
+fix             rnemd all thermal/conductivity 100 z 20
+
+thermo_style    custom step temp pe ke etotal press f_rnemd
+thermo          5000
+
+variable        w loop ${NWINDOWS}
+label           window_loop
+  fix           nve_run all nve
+  run           ${NVE_STEPS}
+  unfix         nve_run
+  fix           nvt_run all nvt temp ${TEMP} ${TEMP} 0.1
+  run           ${NVT_STEPS}
+  unfix         nvt_run
+next            w
+jump            SELF window_loop
+
+print "Total energy transferred: $(f_rnemd)"
+print "Production complete"

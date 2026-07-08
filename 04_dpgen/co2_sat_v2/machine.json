@@ -1,0 +1,91 @@
+{
+    "api_version": "1.0",
+    "deepmd_version": "2.2.9",
+
+    "train": [
+        {
+            "command": "dp",
+            "machine": {
+                "batch_type": "SGE",
+                "context_type": "local",
+                "local_root": "./",
+                "remote_root": "/gs/fs/tga-harada/Moin/deepmd/dpgen_post_co2_v2/dpgen_work/train"
+            },
+            "resources": {
+                "number_node": 1,
+                "cpu_per_node": 1,
+                "gpu_per_node": 1,
+                "group_size": 1,
+                "queue_name": "all.q",
+                "custom_flags": [
+                    "#$ -l node_q=1",
+                    "#$ -l h_rt=4:00:00"
+                ],
+                "source_list": [
+                    "/gs/fs/tga-harada/Moin/deepmd/scripts/env_deepmd.sh"
+                ],
+                "kwargs": {
+                    "pe_name": "openmpi"
+                }
+            }
+        }
+    ],
+
+    "model_devi": [
+        {
+            "command": "lmp",
+            "machine": {
+                "batch_type": "SGE",
+                "context_type": "local",
+                "local_root": "./",
+                "remote_root": "/gs/fs/tga-harada/Moin/deepmd/dpgen_post_co2_v2/dpgen_work/model_devi"
+            },
+            "resources": {
+                "number_node": 1,
+                "cpu_per_node": 1,
+                "gpu_per_node": 1,
+                "group_size": 5,
+                "queue_name": "all.q",
+                "custom_flags": [
+                    "#$ -l node_q=1",
+                    "#$ -l h_rt=2:00:00"
+                ],
+                "source_list": [
+                    "/gs/fs/tga-harada/Moin/deepmd/scripts/env_lammps.sh"
+                ],
+                "kwargs": {
+                    "pe_name": "openmpi"
+                }
+            }
+        }
+    ],
+
+    "fp": [
+        {
+            "command": "mpirun -np 4 --map-by ppr:4:node:pe=12 --bind-to core cp2k.psmp -i input.inp",
+            "machine": {
+                "batch_type": "SGE",
+                "context_type": "local",
+                "local_root": "./",
+                "remote_root": "/gs/fs/tga-harada/Moin/deepmd/dpgen_post_co2_v2/dpgen_work/fp"
+            },
+            "resources": {
+                "number_node": 1,
+                "cpu_per_node": 1,
+                "gpu_per_node": 1,
+                "group_size": 250,
+                "queue_name": "all.q",
+                "custom_flags": [
+                    "#$ -l node_q=1",
+                    "#$ -l h_rt=2:00:00"
+                ],
+                "source_list": [
+                    "/gs/fs/tga-harada/Moin/deepmd/scripts/env_cp2k.sh"
+                ],
+                "kwargs": {
+                    "pe_name": "openmpi"
+                }
+            }
+        }
+    ]
+}

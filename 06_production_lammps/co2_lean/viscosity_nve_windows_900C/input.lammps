@@ -1,0 +1,76 @@
+# Viscosity via RNEMD with short NVE windows at 900C (773K)
+# Li15Na15(BO3)10, 2x2x5 supercell (1400 atoms)
+# Strategy: alternate NVT re-thermalization and NVE+RNEMD windows
+# Each NVE window is 50k steps (50 ps) — stable before energy drift kicks in
+# 60 windows × 50k steps = 3M steps total RNEMD production
+
+variable        TEMP equal 1173.0
+variable        PRES equal 1.0
+variable        NWINDOWS equal 60
+variable        NVE_STEPS equal 50000
+variable        NVT_STEPS equal 5000
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+mass            1 10.810    # B
+mass            2 16.000    # O
+mass            3 6.940     # Li
+mass            4 22.990    # Na
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 78901
+timestep        0.001
+
+# --- Phase 1: NPT equilibration (100 ps) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+thermo          1000
+run             100000
+unfix           1
+
+# --- Phase 2: NVT equilibration (50 ps) ---
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             50000
+unfix           1
+
+# --- Phase 3: NVE+RNEMD windows ---
+reset_timestep  0
+
+# Velocity profile averaged over ALL windows
+compute         layers all chunk/atom bin/1d z lower 0.05 units reduced
+fix             vel_profile all ave/chunk 10 1000 10000 layers vx file velocity_profile.dat
+
+# RNEMD viscosity fix (persists across windows, accumulates momentum)
+fix             rnemd all viscosity 100 x z 20
+
+thermo_style    custom step temp pe ke etotal press f_rnemd
+thermo          10000
+
+# Loop: NVE window → NVT rethermalize → repeat
+variable        w loop ${NWINDOWS}
+label           window_loop
+
+  # NVE + RNEMD window
+  fix           nve_run all nve
+  run           ${NVE_STEPS}
+  unfix         nve_run
+
+  # Short NVT rethermalization (5 ps)
+  fix           nvt_run all nvt temp ${TEMP} ${TEMP} 0.1
+  run           ${NVT_STEPS}
+  unfix         nvt_run
+
+next            w
+jump            SELF window_loop
+
+print "Total momentum transferred: $(f_rnemd)"

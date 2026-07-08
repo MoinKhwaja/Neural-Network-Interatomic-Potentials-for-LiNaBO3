@@ -1,0 +1,39 @@
+# Density & Cp NPT simulation at 900C (1173.0K)
+# B10O36C3Na15Li15, 2x2x5 supercell (1580 atoms)
+
+variable        TEMP equal 1173.0
+variable        PRES equal 1.0
+
+plugin load /apps/t4/rhel9/free/deepmd-kit/2.2.9/gcc11.4.1/cuda12.3.2/openmpi5.0.2/lib/deepmd_lmp/dpplugin.so
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 37890
+timestep        0.001
+
+# --- Equilibration: 100 ps (longer for temperature jump from 600C) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal enthalpy press vol lx ly lz
+thermo          1000
+run             100000
+unfix           1
+
+# --- Production: 200 ps ---
+reset_timestep  0
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal enthalpy press vol lx ly lz
+thermo          100
+run             200000
+
+print "Production complete"

@@ -1,0 +1,43 @@
+# Production NPT simulation at 900C (1173.0K) using DeePMD v2 potential
+# Li15Na15(BO3)10 molten salt, 2x2x5 supercell (1400 atoms)
+
+variable        TEMP equal 1173.0
+variable        PRES equal 1.0
+variable        TAU_T equal 0.100
+variable        TAU_P equal 0.500
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+mass            1 10.810    # B
+mass            2 16.000    # O
+mass            3 6.940     # Li
+mass            4 22.990    # Na
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 34567
+
+# Equilibration: 50 ps
+fix             1 all npt temp ${TEMP} ${TEMP} ${TAU_T} iso ${PRES} ${PRES} ${TAU_P}
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+thermo          1000
+timestep        0.001
+run             50000
+
+# Production: 200 ps
+reset_timestep  0
+unfix           1
+fix             1 all npt temp ${TEMP} ${TEMP} ${TAU_T} iso ${PRES} ${PRES} ${TAU_P}
+dump            1 all custom 100 traj.lammpstrj id type x y z
+dump_modify     1 sort id
+thermo          1000
+run             200000

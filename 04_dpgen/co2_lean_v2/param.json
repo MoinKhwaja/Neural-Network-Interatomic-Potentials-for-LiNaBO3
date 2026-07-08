@@ -1,0 +1,180 @@
+{
+    "type_map":     ["B", "O", "Li", "Na"],
+    "mass_map":     [10.81, 16.00, 6.94, 22.99],
+
+    "init_data_prefix": "",
+    "init_data_sys":    [
+        "/gs/fs/tga-harada/Moin/deepmd/data/600C",
+        "/gs/fs/tga-harada/Moin/deepmd/data/700C",
+        "/gs/fs/tga-harada/Moin/deepmd/data/800C",
+        "/gs/fs/tga-harada/Moin/deepmd/data/900C",
+        "/gs/fs/tga-harada/Moin/deepmd/data/1000C",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000000/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000000/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000000/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000000/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000000/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000001/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000001/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000001/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000001/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000001/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000002/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000002/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000002/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000002/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000002/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000003/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000003/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000003/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000003/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000003/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000004/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000004/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000004/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000004/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000004/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000005/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000005/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000005/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000005/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000005/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000006/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000006/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000006/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000006/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000006/02.fp/data.004",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/02.fp/data.000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/02.fp/data.001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/02.fp/data.002",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/02.fp/data.003",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/02.fp/data.004"
+    ],
+    "init_batch_size":  ["auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto",
+                         "auto", "auto", "auto", "auto", "auto"],
+
+    "sys_configs_prefix": "/gs/fs/tga-harada/Moin/deepmd/init_structures",
+    "sys_configs":  [
+        ["/gs/fs/tga-harada/Moin/deepmd/init_structures/600C/POSCAR"],
+        ["/gs/fs/tga-harada/Moin/deepmd/init_structures/700C/POSCAR"],
+        ["/gs/fs/tga-harada/Moin/deepmd/init_structures/800C/POSCAR"],
+        ["/gs/fs/tga-harada/Moin/deepmd/init_structures/900C/POSCAR"],
+        ["/gs/fs/tga-harada/Moin/deepmd/init_structures/1000C/POSCAR"]
+    ],
+    "sys_batch_size":   ["auto", "auto", "auto", "auto", "auto"],
+
+    "_comment": "=== TRAINING (init from v1 model) ===",
+    "numb_models":  3,
+    "training_init_model":  true,
+    "training_iter0_model_path": [
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/00.train/000",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/00.train/001",
+        "/gs/fs/tga-harada/Moin/deepmd/iter.000007/00.train/002"
+    ],
+    "default_training_param": {
+        "model": {
+            "type_map":     ["B", "O", "Li", "Na"],
+            "descriptor": {
+                "type":         "se_e2_a",
+                "rcut_smth":    0.5,
+                "rcut":         8.0,
+                "sel":          [13, 37, 19, 19],
+                "neuron":       [25, 50, 100],
+                "axis_neuron":  16,
+                "resnet_dt":    false,
+                "seed":         1
+            },
+            "fitting_net": {
+                "neuron":       [120, 120, 120],
+                "resnet_dt":    true,
+                "seed":         1
+            }
+        },
+        "learning_rate": {
+            "type":         "exp",
+            "start_lr":     0.0001,
+            "decay_steps":  5000,
+            "stop_lr":      3.51e-8
+        },
+        "loss": {
+            "start_pref_e": 0.02,
+            "limit_pref_e": 1,
+            "start_pref_f": 1000,
+            "limit_pref_f": 1,
+            "start_pref_v": 0.0,
+            "limit_pref_v": 0.0
+        },
+        "training": {
+            "numb_steps":   400000,
+            "disp_file":    "lcurve.out",
+            "disp_freq":    1000,
+            "save_freq":    10000,
+            "seed":         1
+        }
+    },
+
+    "_comment2": "=== EXPLORATION (longer runs to catch drift) ===",
+    "model_devi_dt":            0.001,
+    "model_devi_skip":          0,
+    "model_devi_f_trust_lo":    0.06,
+    "model_devi_f_trust_hi":    0.15,
+    "model_devi_clean_traj":    true,
+    "model_devi_jobs": [
+        {
+            "_comment": "iter 0: 200k steps (200 ps) — past stability limit",
+            "sys_idx":  [0, 1, 2, 3, 4],
+            "temps":    [873, 973, 1073, 1173, 1273],
+            "press":    [1.0],
+            "trj_freq": 10,
+            "nsteps":   200000,
+            "ensemble": "npt",
+            "_idx":     "00"
+        },
+        {
+            "_comment": "iter 1: 300k steps (300 ps)",
+            "sys_idx":  [0, 1, 2, 3, 4],
+            "temps":    [873, 973, 1073, 1173, 1273],
+            "press":    [1.0],
+            "trj_freq": 10,
+            "nsteps":   300000,
+            "ensemble": "npt",
+            "_idx":     "01"
+        },
+        {
+            "_comment": "iter 2: 400k steps (400 ps)",
+            "sys_idx":  [0, 1, 2, 3, 4],
+            "temps":    [873, 973, 1073, 1173, 1273],
+            "press":    [1.0],
+            "trj_freq": 10,
+            "nsteps":   400000,
+            "ensemble": "npt",
+            "_idx":     "02"
+        },
+        {
+            "_comment": "iter 3: 500k steps (500 ps) — final long exploration",
+            "sys_idx":  [0, 1, 2, 3, 4],
+            "temps":    [873, 973, 1073, 1173, 1273],
+            "press":    [1.0],
+            "trj_freq": 10,
+            "nsteps":   500000,
+            "ensemble": "npt",
+            "_idx":     "03"
+        }
+    ],
+
+    "_comment3": "=== LABELING (CP2K) ===",
+    "fp_style":         "cp2k",
+    "shuffle_poscar":   false,
+    "fp_task_max":      50,
+    "fp_task_min":      1,
+    "fp_pp_path":       "/gs/fs/tga-harada/Moin/deepmd",
+    "fp_pp_files":      [],
+    "external_input_path": "/gs/fs/tga-harada/Moin/deepmd/cp2k_template.inp"
+}

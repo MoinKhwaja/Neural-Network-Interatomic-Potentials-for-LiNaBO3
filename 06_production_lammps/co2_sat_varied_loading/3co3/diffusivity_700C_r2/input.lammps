@@ -1,0 +1,67 @@
+# Ion diffusivity via MSD at 700C (973.15K)
+# B10O36C3Na15Li15, 2x2x5 supercell (1580 atoms)
+
+variable        TEMP equal 973.15
+variable        PRES equal 1.0
+
+plugin load /apps/t4/rhel9/free/deepmd-kit/2.2.9/gcc11.4.1/cuda12.3.2/openmpi5.0.2/lib/deepmd_lmp/dpplugin.so
+
+units           metal
+boundary        p p p
+atom_style      atomic
+neighbor        1.0 bin
+
+box             tilt large
+read_data       conf.lmp
+replicate       2 2 5
+change_box      all triclinic
+
+pair_style      deepmd frozen_model.pb
+pair_coeff      * *
+
+velocity        all create ${TEMP} 13579
+timestep        0.001
+
+# Define groups for each species
+group           grp_B   type 1
+group           grp_O   type 2
+group           grp_C   type 3
+group           grp_Na  type 4
+group           grp_Li  type 5
+
+# --- Phase 1: NPT equilibration (100 ps) ---
+fix             1 all npt temp ${TEMP} ${TEMP} 0.1 iso ${PRES} ${PRES} 0.5
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+thermo          1000
+run             100000
+unfix           1
+
+# --- Phase 2: NVT equilibration (50 ps) ---
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+run             50000
+unfix           1
+
+# --- Phase 3: NVT production with MSD (5 ns) ---
+reset_timestep  0
+fix             1 all nvt temp ${TEMP} ${TEMP} 0.1
+
+compute         msd_B   grp_B  msd
+compute         msd_O   grp_O  msd
+compute         msd_C   grp_C  msd
+compute         msd_Na  grp_Na msd
+compute         msd_Li  grp_Li msd
+
+fix             msd_out all ave/time 1 1 1000 &
+                c_msd_B[4] c_msd_O[4] c_msd_C[4] c_msd_Na[4] c_msd_Li[4] &
+                file msd.dat
+
+thermo_style    custom step temp pe ke etotal press &
+                c_msd_B[4] c_msd_O[4] c_msd_C[4] c_msd_Na[4] c_msd_Li[4]
+thermo          10000
+
+dump            1 all custom 1000 traj_unwrap.lammpstrj id type xu yu zu
+dump_modify     1 sort id
+
+run             5000000
+
+print "Production complete"
